@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Display</title>
+        <style type="text/css">
+            * {
+                -webkit-touch-callout: none;
+                -webkit-tap-highlight-color: rgba(0,0,0,0);
+                margin:0px;
+                padding:0px;
+            }
+            
+            #TouchCodeMainCanvas {
+                background-color:white;
+				border:1px solid #aaa;
+				border-top:none;
+            }
+            
+            body {
+                background-color:white;
+				overflow:hidden;
+            }
+            </style>
+     <script type="text/javascript">
+      "use strict";
+      var TOUCHCODE = {};
+     
+     window.onload = function() {
+         TOUCHCODE.canvas = document.getElementById("TouchCodeMainCanvas");
+         TOUCHCODE.context = TOUCHCODE.canvas.getContext('2d');
+      };
+
+      window.onerror = function(msg, url, linenumber){
+			parent.displayFrameErrored(msg, url, linenumber);
+         return true;
+      };
+
+	TOUCHCODE.scriptNode = undefined;
+	TOUCHCODE.timeout = undefined;
+	TOUCHCODE.initialValues = {};
+	TOUCHCODE.updateCode = function(string) {
+		
+		window.clearInterval(TOUCHCODE.timeout);
+		
+		// keep track of new variables by learning old variables
+		var firstLevel =  {};
+		var propertyName;
+		for (propertyName in window) {
+			if (typeof window[propertyName] == "number") {
+				firstLevel[propertyName] = window[propertyName];
+			}
+		}
+		
+			// create node
+			var headID = document.getElementById("sourceHolder");         
+			var newScript = document.createElement('script');
+			newScript.type = 'text/javascript';
+			
+			var sourceTextNode = document.createTextNode(string);
+			newScript.appendChild(sourceTextNode);
+			
+			if (headID.hasChildNodes()){
+			    while ( headID.childNodes.length >= 1 ) {
+			        headID.removeChild( headID.firstChild );       
+			    } 
+			}
+			
+			headID.appendChild(newScript);
+			
+			// only change if definition changed
+			
+			for (propertyName in window) {
+				if (typeof window[propertyName] === "number") {
+					
+					if (!firstLevel[propertyName]) { // this is a new variable
+						TOUCHCODE.initialValues[propertyName] = window[propertyName];
+					} else {
+						console.log(propertyName + " init: "+TOUCHCODE.initialValues[propertyName] +" cur: "+window[propertyName]);
+						if (window[propertyName] !== firstLevel[propertyName]) { // variable changed after compilation
+							if (window[propertyName] === TOUCHCODE.initialValues[propertyName]) {
+								// if variable was set to initial value, reset to last known value
+								window[propertyName] = firstLevel[propertyName]; 
+							} else { 
+								// variable was set to something new, update initial value
+								TOUCHCODE.initialValues[propertyName] = window[propertyName];
+							}
+						}
+					}
+				}
+			}
+
+			// draw
+			draw(TOUCHCODE.context);	
+			TOUCHCODE.timeout = window.setInterval(function(){draw(TOUCHCODE.context);},30);
+		} 
+		
+		function rgb(r,g,b) {
+			return "rgb("+r+","+g+","+b+")";
+		}
+    </script>
+</head>
+<body>
+    <canvas id="TouchCodeMainCanvas" width="500" height="500">
+	</canvas>
+<div id="sourceHolder"></div>
+</body>
+</html>
