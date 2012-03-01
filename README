@@ -1,1 +1,6 @@
-An interactive javascript sketchbook
+An interactive programming sketchbook
+Based on a design by Bret Victor
+
+This goal of this project is to improve the programming experience by incorporating immediate feedback and direct interaction. 
+
+Originally created in a 24 hour programming competition in February 2012 by Daniel Hooper

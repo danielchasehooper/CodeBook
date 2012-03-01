@@ -1,0 +1,9 @@
+.cm-s-xcodeTheme span.cm-comment { color: #008e00; }
+.cm-s-xcodeTheme span.cm-keyword { font-weight: bold; color: #CC00A1; }
+.cm-s-xcodeTheme span.cm-string { color: #E20000; }
+.cm-s-xcodeTheme span.cm-builtin { font-weight: bold; color: #077; }
+.cm-s-xcodeTheme span.cm-special { font-weight: bold; color: #0aa; }
+.cm-s-xcodeTheme span.cm-variable { color: #408389; }
+.cm-s-xcodeTheme span.cm-number, .cm-s-neat span.cm-atom { color: #4300DB; }
+.cm-s-xcodeTheme span.cm-meta {color: #555;}
+.cm-s-xcodeTheme span.cm-link { color: #3a3; }
