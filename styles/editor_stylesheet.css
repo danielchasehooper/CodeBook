@@ -105,17 +105,25 @@ html, body {
 }
 
 a {
-	color: #333;
+	color: #222;
 	text-decoration: none;
 }
 
-.centerlink {
+a:hover {
+	color: #000;
+}
+
+.links {
 	position:absolute; width:500px;
 	text-align:center;
 	left:50%;
 	margin-left:-250px;	
-	margin-top:280px;		
+	margin-top:270px;		
 	top:50%;
+}
+
+.links a {
+	margin-right:40px;
 }
 
 .button {

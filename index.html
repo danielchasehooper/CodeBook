@@ -10,88 +10,55 @@
 	<title>CodeBook</title>
 </head>
 <body>
-<div class="centerlink" ><a target="_blank" href="https://twitter.com/danielchooper">@danielchooper</a></div>
+<div class="links">
+	<a target="_blank" href="http://danielhooper.tumblr.com/post/19313911658/codebook">What is this?</a>
+	<a target="_blank" href="https://twitter.com/danielchooper">@danielchooper</a>
+	<a target="_blank" href="https://github.com/danielchasehooper/CodeBook">Fork this</a>
+</div>
 <div id="superContainer">
 	 <div id="codeContainer">
 		<textarea id="code" name="code">
 // Interactive Javascript editor
 // By Daniel Hooper
-// Based on a design by Bret Victor
 //
-// Hold down command to drag number's values or 
-// highlight elements on the canvas and their respective draw calls
-//
+// Command+Drag numbers to change their values
+// Command+Hover over the canvas to navigate
 // Have Fun!
 
-var paralaxOffset = -107;
-var paralaxSpeed = 4;
-var forestHeight = 50;
-var movementSpeed = 5;
-var images;
+framerate(60);
 
-framerate(50);
-
-function circle(ctx,x,y,r){
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI*2, true); 
-    ctx.closePath();
-    ctx.fill();
-}
+var x = 50;
+var y = 200;
+var vx = 1;
+var vy = 1;
+var speed = 2;
+var boxSize = 71;
 
 function draw(ctx) {
-
-    // Sky
-    ctx.fillStyle = rgb(121,172,217);
-    ctx.fillRect(0,0,500,500); 
-
-    // Sun
-    ctx.fillStyle=rgb(295,236,91);
-	circle(ctx,385,121,56);
-
-    // Trees
-    ctx.fillStyle = rgb(2,138,100);
-    ctx.fillRect(0,500-forestHeight,500,forestHeight);
-
-    var offset  = -(Math.floor(paralaxOffset / 4)%500);
-    if(offset > 0) { offset -= 500; }
-	var foresty = 500-images[0].height-forestHeight;
-    ctx.drawImage(images[0], offset,  foresty);
-    ctx.drawImage(images[0], offset+500, foresty); 
-
-    offset = -(Math.floor(paralaxOffset)%500);
-    if(offset > 0) { offset -= 500; }
-
-    ctx.save();
-    ctx.translate(offset, 500 - images[1].height);
-
-	// telephone poles
-	ctx.drawImage(images[2], 500, -140);
-	ctx.drawImage(images[2], 0, -140); 
-
-	// grass
-	ctx.drawImage(images[1], 0, 0);
-    ctx.drawImage(images[1], 500, 0); 
-    ctx.restore();
-
-	// Input
-    if(Keys.left) {
-        paralaxOffset -= movementSpeed;
-    } else if(Keys.right) {
-        paralaxOffset += movementSpeed;
-    }
-}
-
-function getimg(src) {
-    var i = new Image();
-    i.src = "demoImages/"+src; 
-    return i;
-}
-
-if (!images) {
-    images = [];
-    images[0] = getimg("forest.png");
-    images[1] = getimg("grass.png");
-    images[2] = getimg("pole2.png");
+	ctx.fillStyle = "#000";
+	ctx.fillRect(0,0,500,500);
+	
+	ctx.fillStyle = "#0f0";
+	ctx.fillRect(x,y,boxSize,boxSize);
+	
+	x += vx*speed;
+	y += vy*speed;
+	
+	if (x <= 0) {
+		x = 0;
+		vx = 1;
+	} else if (x > 500-boxSize) {
+		x = 500 - boxSize;
+		vx = -1;
+	}
+	
+	if (y <= 0) {
+		y = 0;
+		vy = 1;
+	} else if (y > 500-boxSize) {
+		y = 500 - boxSize;
+		vy = -1;
+	}
 }
 </textarea>
 		
@@ -106,6 +73,6 @@ if (!images) {
 	</canvas>
 </div>
 </div>
-<div id="errorReport" class="hideReport">hi</div>
+<div id="errorReport" class="hideReport">No one should ever see this! Hi Mom!</div>
 </body>
 </html>
