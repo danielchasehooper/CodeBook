@@ -96,7 +96,15 @@ if (!images) {
 </textarea>
 		
 </div>
-<iframe id="displayFrame" src="display.html"></iframe>
+<div id="displayContainer">
+	<canvas id="TouchCodeMainCanvas" width="500" height="500">
+		Your Browser does not support Canvas
+	</canvas>
+	<div id="sourceHolder"></div>
+	<canvas id="TouchCodeHiddenCanvas" width="500" height="500">
+		Your Browser does not support Canvas
+	</canvas>
+</div>
 </div>
 <div id="errorReport" class="hideReport">hi</div>
 </body>

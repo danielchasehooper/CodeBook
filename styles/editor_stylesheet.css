@@ -39,7 +39,7 @@ html, body {
 	background-color:white;
 }
 
-#displayFrame {
+#displayContainer {
 	position:absolute;
 	left:0px;
 	width:500px;
@@ -51,12 +51,15 @@ html, body {
 
 .CodeMirror-scroll {
 	height: 500px; 
+	width: 500px;
 	overflow: auto;
-	width:500px;
-	overflow-x: auto;
 }
 
 .errorLine {
+	background:#fdd !important;
+}
+
+.highlightLine {
 	background:#fdd !important;
 }
 
@@ -128,4 +131,25 @@ a {
 	-moz-box-shadow: 0px 2px 2px rgba(0,0,0,0.4);
 	-webkit-box-shadow: 0px 2px 2px rgba(0,0,0,0.4);
 	box-shadow: 0px 2px 2px rgba(0,0,0,0.4);	
+}
+
+/* Common */
+* {
+	-webkit-touch-callout: none;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	margin:0px;
+	padding:0px;
+	outline: none;
+}
+
+#TouchCodeMainCanvas {
+	background-color:white;
+}
+
+#TouchCodeHiddenCanvas {
+	display:none;
+}
+
+#sourceHolder{
+	display:none;
 }
