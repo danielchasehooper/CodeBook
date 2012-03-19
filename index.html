@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="CodeMirror-2.21/lib/codemirror.js"></script>
+    <script src="CodeMirror-2.21/mode/javascript/javascript.js"></script>
+	<script src="scripts/editor.js"></script>
+ 	<link rel="stylesheet" href="CodeMirror-2.21/lib/codemirror.css">
+ 	<link rel="stylesheet" href="styles/xcodeTheme.css">
+	<link rel="stylesheet" href="styles/editor_stylesheet.css">
+	<title>CodeBook</title>
+</head>
+<body>
+<div class="links">
+	<a target="_blank" href="http://danielhooper.tumblr.com/post/19313911658/codebook">What is this?</a>
+	<a target="_blank" href="https://twitter.com/danielchooper">@danielchooper</a>
+	<a target="_blank" href="https://github.com/danielchasehooper/CodeBook">Fork this</a>
+</div>
+
+<div id="superContainer">
+	 <div id="codeContainer">
+		<textarea id="code" name="code">
+// Interactive Javascript editor
+// By Daniel Hooper
+// Based on a talk by Bret Victor
+//
+// Command+Drag numbers to change their values
+// Have Fun!
+
+var paralaxOffset = 732;
+var paralaxSpeed = 4;
+var forestHeight = 50;
+var movementSpeed = 5;
+var images;
+<<<<<<< HEAD
+
+framerate(50);
+
+=======
+
+framerate(50);
+
+>>>>>>> 4a6a4c8... Added probe support for images. Keyboard no longer affects canvas if editor has focus. Updated demo code.
+function circle(ctx,x,y,r){
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2, true); 
+    ctx.closePath();
+    ctx.fill();
+}
+
+function draw(ctx) {
+
+    // Sky
+    ctx.fillStyle = color(121,172,217);
+    ctx.fillRect(0,0,500,500); 
+
+    // Sun
+    ctx.fillStyle=color(295,236,91);
+	circle(ctx,385,121,56);
+
+    // Trees
+    ctx.fillStyle = color(2,138,100);
+	ctx.fillRect(0,500-forestHeight,500,forestHeight);
+
+    var offset  = -(Math.floor(paralaxOffset / 4)%538);
+    if(offset > 0) { offset -= 538; }
+	var foresty = 500-images[0].height-forestHeight;
+    ctx.drawImage(images[0], offset,  foresty);
+    ctx.drawImage(images[0], offset+538, foresty); 
+
+    offset = -(Math.floor(paralaxOffset)%538);
+    if(offset > 0) { offset -= 538; }
+
+	// telephone poles
+	var poleY = 500 - images[1].height;
+	ctx.drawImage(images[2], offset+538, poleY-140);
+	ctx.drawImage(images[2], offset, poleY-140); 
+
+	// grass
+	ctx.drawImage(images[1], offset, poleY);
+    ctx.drawImage(images[1], offset+538, poleY); 
+
+	// Input
+    if(Keys.left) {
+        paralaxOffset -= movementSpeed;
+    } else if(Keys.right) {
+        paralaxOffset += movementSpeed;
+    } else {
+		paralaxOffset++;
+	}
+}
+
+function getimg(src) {
+    var i = new Image();
+    i.src = "demoimages/"+src; 
+    return i;
+}
+
+if (!images) {
+    images = [];
+    images[0] = getimg("forest.png");
+    images[1] = getimg("grass.png");
+    images[2] = getimg("pole2.png");
+}         
+</textarea>
+		
+</div>
+<div id="displayContainer">
+	<canvas id="TouchCodeMainCanvas" width="500" height="500">
+		Your Browser does not support Canvas
+	</canvas>
+	<div id="sourceHolder"></div>
+	<canvas id="TouchCodeHiddenCanvas" width="500" height="500">
+		Your Browser does not support Canvas
+	</canvas>
+</div>
+</div>
+<div id="errorReport" class="hideReport">No one should ever see this! Hi Mom!</div>
+<div id="inspectButton" class="button">Inspect</div>
+</body>
+</html>
