@@ -150,11 +150,10 @@ CODEBOOK = (function(){
 					break;
 			}
 		}
-
-		if (e.keyCode === 91) {
+		
+		if (e.keyCode === 91 || e.keyCode === 18) {
 			controlPressed = true;
 		}
-		
 	}
 	
 	function keyUpHandler(e){
@@ -171,10 +170,10 @@ CODEBOOK = (function(){
 			case 40:
 				Keys.down = false;
 				break;
-			case 91:
-				controlPressed = false;
-				
-				break;
+		}
+		
+		if (e.keyCode === 91 || e.keyCode === 18) {
+			controlPressed = false;
 		}
 	}
 	
