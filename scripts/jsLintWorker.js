@@ -14,7 +14,7 @@ this.onmessage = function(e) {
 };
 
 function lint(string) {
-	var string = "/*global\n'rgb','rgba','framerate','Keys','console'*/"+string; 	//undef:true
+	var string = "/*global\n'color','framerate','Keys','console'*/"+string; 	//undef:true
 	var passed = JSLINT(string, {browser:true,sloppy:true, es5:true,evil: true, nomen: true, regexp: true, white:true, plusplus:true, vars:true});
 	
 	if (!passed) {

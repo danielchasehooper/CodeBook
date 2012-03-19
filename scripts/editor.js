@@ -1,12 +1,14 @@
-var CODEBOOK;
+var CODEBOOK, draw, Keys;
 
 /* 
  * Javascript additions
  */ 
 
+/*
 if (!console) {
 	var console = {log: function(string){"use strict";}};
 }
+*/
 
 if (typeof Object.create !== 'function') {
 	"use strict";
@@ -17,34 +19,22 @@ if (typeof Object.create !== 'function') {
 	};
 }
 
-Array.prototype.each = function(f){
-	"use strict";
-	var i;
-	for (i = 0; i < this.length; i += 1) {
-		f(this[i], i);
-	}
-};
-
 /* 
  * API Functions 
  * These are availible to the code being run
  * 
  */ 
 
-var draw = function(c){};
+draw = function(c){};
 
-var Keys = {left:false,down:false,right:false,up:false};
+Keys = {left:false,down:false,right:false,up:false};
 
 function framerate(fps){"use strict";
 	return CODEBOOK.framerate(fps);
 }
 
-function rgb(r,g,b) {"use strict";
-	return "rgb("+r+","+g+","+b+")";
-}
-
-function rgba(r,g,b,a) {"use strict";
-	return "rgba("+r+","+g+","+b+","+a+")";
+function color(r,g,b,a) {"use strict";
+	return "rgba("+r+","+g+","+b+","+(a | 1)+")";
 }
 
 function exists(value) {"use strict";
@@ -81,7 +71,10 @@ CODEBOOK = (function(){
 	var timeout;
 	var initialValues = {};
 	var framerateInterval = 17;
-	var inspectorMode;
+	
+	var editorHasFocus = false;
+	
+	var canvasHightlightColor = "#e33";
 	
 	var hightlightLine, getHighlightLine;
 	(function () {
@@ -95,6 +88,10 @@ CODEBOOK = (function(){
 			if (line !== -1) {
 				editor.setLineClass(line-1, "highlightLine");
 			}
+			
+			if (!timeout) {
+				render(true, false);
+			}
 		};
 		
 		getHighlightLine = function() {
@@ -102,27 +99,62 @@ CODEBOOK = (function(){
 		};
 	}());
 	
+	
+	var setInspectMode, inspectMode;
+	(function () {
+		var private_inspectorMode = false;
+		setInspectMode = function (shouldInspect) {
+			private_inspectorMode = shouldInspect;
+			
+			if (private_inspectorMode) {
+				stop();
+				document.body.className = "inspectCursor";
+				document.getElementById("inspectButton").className = "button buttonPressed";
+			} else {
+				start();
+				hightlightLine(-1);
+				document.body.className = undefined;
+				document.getElementById("inspectButton").className = "button";
+			}
+		};
+		
+		inspectMode = function () {
+			return private_inspectorMode;
+		};
+	}());
+	
+	var typesToPersistState = {
+		number:true,
+		boolean:true,
+		string:true
+	};
+/* 	typesToPersistState["function"] = true; */
+	
 	/* Event Handlers */
 	
 	function keyDownHandler(e){
-		switch(e.keyCode) {
-			case 37:
-				Keys.left = true;
-				break;
-			case 38:
-				Keys.up = true;
-				break;
-			case 39:
-				Keys.right = true;
-				break;
-			case 40:
-				Keys.down = true;
-				break;
-			case 91:
-				controlPressed = true;
-				inspectorMode = true;
-				break;
+
+		if (!editorHasFocus) {
+			switch(e.keyCode) {
+				case 37:
+					Keys.left = true;
+					break;
+				case 38:
+					Keys.up = true;
+					break;
+				case 39:
+					Keys.right = true;
+					break;
+				case 40:
+					Keys.down = true;
+					break;
+			}
 		}
+
+		if (e.keyCode === 91) {
+			controlPressed = true;
+		}
+		
 	}
 	
 	function keyUpHandler(e){
@@ -141,8 +173,7 @@ CODEBOOK = (function(){
 				break;
 			case 91:
 				controlPressed = false;
-				inspectorMode = false;
-				hightlightLine(-1);
+				
 				break;
 		}
 	}
@@ -175,29 +206,28 @@ CODEBOOK = (function(){
 	}
 	
 	function textChangeHandler(editorArg, info) {
+		var i, editorString;
+				
 		if (jslintWorker) {
 			jslintWorker.postMessage({cmd:"STOP"});
 			jslintWorker = undefined;
 		}
 		
-		// clear markers
-		// editor.setLineClass(errorLine,null);
-		// 		editor.clearMarker(errorLine);
-		errorLineNumber = -1;
-		hideErrorPopover();
-		errors = [];
-		
-		var i;
-		console.log("clearning line markers");
-		for (i = 0; i < editor.lineCount(); i++) {
-			editor.setLineClass(i,undefined);
-			editor.clearMarker(i);
-		}
-		
-		var editorString = editor.getValue();
+		editorString = editor.getValue();
 		window.localStorage.code = editorString;
 
 		if (!isSlidingNumber){
+			errorLineNumber = -1;
+			hideErrorPopover();
+			errors = [];
+		
+		
+			// This takes a really long time to do, should look for another way.
+			for (i = 0; i < editor.lineCount(); i++) {
+				editor.setLineClass(i,undefined);
+				editor.clearMarker(i);
+			}
+		
 			console.log("Messaging worker");
 			jslintWorker = new Worker('scripts/jsLintWorker.js')
 			jslintWorker.addEventListener("message",lintParsingComplete,false);
@@ -263,11 +293,9 @@ CODEBOOK = (function(){
 				isSlidingNumber = false;
 			}
 		}
-		
-		inspectorMode = false;
 	}
 
-	function moveMoved(e){
+	function mouseMoved(e){
 		if (isSlidingNumber) {
 			isSlidingNumber.dragged = true;
 			
@@ -291,7 +319,7 @@ CODEBOOK = (function(){
 
 		lastMousePosition = {x:e.pageX,y:e.pageY};
 		
-		if (inspectorMode) {
+		if (inspectMode()) {
 			if(document.getElementById("TouchCodeMainCanvas") === e.target) {
 				var line = getDrawCallLineNumberForScreenLocation(e.offsetX,e.offsetY);
 				hightlightLine(line);
@@ -315,6 +343,12 @@ CODEBOOK = (function(){
 			}
 		}
 		isSlidingNumber = false;
+		
+		if (event.target === document.getElementById("inspectButton")) {
+			setInspectMode(!inspectMode());
+		} else {
+			setInspectMode(false);
+		}
 	}
 
 	/* text events */
@@ -343,13 +377,7 @@ CODEBOOK = (function(){
 
 	function updateCode(string) {
 		stop();
-		
-		var typesToPersistState = {
-				number:true,
-				boolean:true,
-				string:true
-			};
-		typesToPersistState["function"] = true;
+	
 
 		// keep track of new variables by learning old variables
 		var firstLevel =  {};
@@ -389,8 +417,6 @@ CODEBOOK = (function(){
 			console.log("compile Error: "+e);
 		}
 
-		// TODO: delete unused variables/functions
-
 		for (propertyName in window) {
 			if (typesToPersistState[(typeof window[propertyName])+""]) {
 
@@ -410,7 +436,9 @@ CODEBOOK = (function(){
 			}
 		}
 		
-		// find variables in the old version that were not added to the new version
+		// TODO: delete unused variables/functions
+		// find variables in the old version that were not (re)added to the new version
+		// delete them
 
 		render();
 		start();
@@ -422,31 +450,31 @@ CODEBOOK = (function(){
 		probex = x;
 		probey = y;
 
-		probeLine = -1;
-		draw(probeContext);
+		probeLine = -1;		
+		render(true, true);
 
 		return probeLine;
 	}
 	
-	function render() {
-		var prop;
+	function render(preventVariableUpdate, useProbeContext) {
+		var firstLevel =  {}, propertyName;
 		
-/* 			try{ */
-		 	draw(context);
-/* 			} catch(e) { */
-		/*	console.log(e);
-			console.log(e.line+": "+e.message);
-			for (prop in e) {
-			 	console.log(prop+": "+e[prop]);
-			} */
-			
-/*
-			// This doesn't work in all browsers
-			displayFrameErrored(e.message, e.line);
-			
-			stop();
+		if (preventVariableUpdate) {	
+			for (propertyName in window) {
+				if (window.hasOwnProperty(propertyName) && typesToPersistState[typeof window[propertyName]]) {
+					firstLevel[propertyName] = window[propertyName];
+				}
+			}
 		}
-*/
+		
+	 	draw(useProbeContext ? probeContext : context);
+	 	
+	 	
+	 	if (preventVariableUpdate) {
+			for (propertyName in firstLevel) {
+				window[propertyName] = firstLevel[propertyName];
+			}
+		}
 	}
 	
 	function start() {
@@ -471,25 +499,20 @@ CODEBOOK = (function(){
 		errorLineNumber = linenumber-1;
 		editor.setLineClass(errorLineNumber,"errorLine");
 		editor.setMarker(errorLineNumber," ","errorMarker");
-	//	TOUCHCODE.scrollToLine(linenumber-1);
 		errorText = msg;
 	}
 	
 	function scrollToLine(line) {
-		editor.scrollTo(undefined,editor.charCoords({line:line,ch:0}).y);
-		editor.scrollTo(0,undefined);
-		// editor.setCursor({line:isSlidingNumber.lineNumber,ch:isSlidingNumber.end});
-/*
-		editor.setSelection({line:line, 
-								ch:0},
-								{line:line, 
-									ch:100});
-*/
+		var ycoord = editor.charCoords({line:line,ch:0}).y;
+		
+		// This does not work. I have no idea why not.
+/* 		editor.scrollTo(0, ycoord); */
 	}
 	
 	window.onload = function() {
 		editor = CodeMirror.fromTextArea(document.getElementById("code"), {
 			lineNumbers: true,
+			gutter: true,
 			matchBrackets: true,
 			onChange:textChangeHandler,
 			theme:"xcodeTheme",
@@ -498,7 +521,9 @@ CODEBOOK = (function(){
 			indentWithTabs:true,
 			indentUnit:4,
 			tabSize:4,
-			fixedGutter:true
+			fixedGutter:true,
+			onFocus: function () {editorHasFocus = true; Keys={};},
+			onBlur:function(){ editorHasFocus = false; }
 		});
 
 		// view functionality
@@ -520,7 +545,7 @@ CODEBOOK = (function(){
 		context.secretFillRect = context.fillRect;
 		context.fillRect = function(x,y,w,h) {
 			if (CODEBOOK.currentOperatingLineNumber === getHighlightLine()) {
-				context.fillStyle = "#f00";
+				context.fillStyle = canvasHightlightColor;
 			}
 			context.secretFillRect(x,y,w,h);
 		};
@@ -528,21 +553,23 @@ CODEBOOK = (function(){
 		context.secretfill = context.fill;
 		context.fill = function() {
 			if (CODEBOOK.currentOperatingLineNumber === getHighlightLine()) {
-				context.fillStyle = "#f00";
+				context.fillStyle = canvasHightlightColor;
 			}
 			context.secretfill();
 		};
 		
 		context.secretdrawImage = context.drawImage;
 		context.drawImage = function(img,x,y) {
-			context.secretdrawImage(img,x,y);
-			
 			if (CODEBOOK.currentOperatingLineNumber === getHighlightLine()) {
-				context.fillStyle = "#f00";
-				var origionalCompositeOp = context.globalCompositeOperation;
-				context.globalCompositeOperation = "source-in";
-				context.secretfill(0,0,500,500);
-				context.globalCompositeOperation = origionalCompositeOp;
+				probeContext.clearRect(0,0,500,500);
+				probeContext.secretdrawImage(img,x,y);
+				probeContext.globalCompositeOperation = "source-atop";
+				probeContext.fillStyle = canvasHightlightColor;
+				probeContext.secretFillRect(0,0,500,500);
+				probeContext.globalCompositeOperation = "source-over";
+				context.secretdrawImage(probeCanvas,0,0);
+			} else {
+				context.secretdrawImage(img,x,y);
 			}
 		};
 		
@@ -586,11 +613,12 @@ CODEBOOK = (function(){
 		};
 
 		document.addEventListener('mousedown',mouseDown, true);
-		document.addEventListener('mousemove',moveMoved, true);
+		document.addEventListener('mousemove',mouseMoved, true);
 		document.addEventListener('mouseup',mouseUp, false);
 		document.addEventListener('mouseout',mouseoutHandler, false);	
 		document.addEventListener("keydown",keyDownHandler,true);
 		document.addEventListener("keyup",keyUpHandler,true);
+		
 		
 		if (window.localStorage.code) {
 			editor.setValue(window.localStorage.code);
