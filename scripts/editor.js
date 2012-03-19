@@ -4,11 +4,9 @@ var CODEBOOK, draw, Keys;
  * Javascript additions
  */ 
 
-/*
 if (!console) {
 	var console = {log: function(string){"use strict";}};
 }
-*/
 
 if (typeof Object.create !== 'function') {
 	"use strict";
