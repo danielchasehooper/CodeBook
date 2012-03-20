@@ -32,7 +32,7 @@ function framerate(fps){"use strict";
 }
 
 function color(r,g,b,a) {"use strict";
-	return "rgba("+r+","+g+","+b+","+(a | 1)+")";
+	return "rgba("+r+","+g+","+b+","+(a || 1)+")";
 }
 
 function exists(value) {"use strict";
